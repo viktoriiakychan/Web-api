@@ -15,6 +15,7 @@ namespace Compass.Core.Entities.Specification
             {
                 Query
                     .Where(c => c.Name == name);
+                    
             }
         }
     }

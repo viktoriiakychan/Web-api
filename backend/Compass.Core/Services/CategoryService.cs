@@ -21,10 +21,16 @@ namespace Compass.Core.Services
             _mapper = mapper;
         }
 
-        public async Task<List<Category>> GetAll()
+        public async Task<ServiceResponse> GetAll()
         {
             var result = await _categoryRepository.GetAll();
-            return _mapper.Map<List<Category>>(result);
+            var data = _mapper.Map<List<CategoryDto>>(result);
+            return new ServiceResponse
+            {
+                Message = "All categories were loaded",
+                Success = true,
+                Payload = data
+            };
         }
 
         public async Task<Category> GetById(object id)
@@ -57,6 +63,7 @@ namespace Compass.Core.Services
         public async Task<ServiceResponse> Delete(int id)
         {
             Category category = await _categoryRepository.GetByID(id);
+            
             await _categoryRepository.Delete(category);
             await _categoryRepository.Save();
             return new ServiceResponse

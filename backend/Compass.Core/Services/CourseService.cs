@@ -43,10 +43,16 @@ namespace Compass.Core.Services
         }
 
 
-        public async Task<List<CourseDto>> GetByCategory(int id)
+        public async Task<ServiceResponse> GetByCategory(int id)
         {
             var result = await _courseRepository.GetListBySpec(new Courses.ByCategory(id));
-            return _mapper.Map<List<CourseDto>>(result);
+            var data= _mapper.Map<List<CourseDto>>(result);
+            return new ServiceResponse
+            {
+                Message = "All courses were loaded",
+                Success = true,
+                Payload = data
+            };
         }
 
         public async Task<ServiceResponse> Create(CourseDto model)

@@ -11,7 +11,7 @@ namespace Compass.Core.Interfaces
 {
     public interface ICategoryService
     {
-        Task<List<Category>> GetAll();
+        Task<ServiceResponse> GetAll();
         Task<Category> GetById(object id);
         Task<ServiceResponse> Create(CategoryDto model);
         Task<ServiceResponse> Delete(int id);

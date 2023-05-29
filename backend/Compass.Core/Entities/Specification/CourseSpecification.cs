@@ -21,9 +21,7 @@ namespace Compass.Core.Entities.Specification
         {
             public ByCategory(int categoryId)
             {
-                Query
-                    .Include(x => x.Category)
-                    .Where(c => c.CategoryId == categoryId);
+                Query.Where(x => x.CategoryId == categoryId).Include(x => x.Category);
             }
         }
         public class GetByTitle : Specification<Course>

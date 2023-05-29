@@ -24,7 +24,7 @@ namespace Compass.Api.Controllers
             _userService = userService;
         }
 
-
+        [AllowAnonymous]
         [HttpGet("categories")]
         public async Task<IActionResult> Index()
         {
