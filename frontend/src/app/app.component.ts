@@ -7,4 +7,20 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'front';
+
+}
+export interface Course 
+{
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  categoryId: number;
+  categoryName: string;
+}
+export interface Category 
+{
+  id: number;
+  name: string;
+  description: string;
 }
