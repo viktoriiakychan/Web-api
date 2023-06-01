@@ -17,6 +17,7 @@ export interface Course
   price: number;
   categoryId: number;
   categoryName: string;
+  imagePath: string;
 }
 export interface Category 
 {

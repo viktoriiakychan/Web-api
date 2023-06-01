@@ -1,4 +1,4 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { catchError, Observable, of, tap } from 'rxjs';
 import { Course } from "src/app/app.component";
@@ -9,13 +9,23 @@ export class CourseService
 {
     constructor(private http: HttpClient) { }
 
-    private url = 'https://localhost:5000/api/Course/courses';
+    private getCoursesURL = 'https://localhost:5000/api/Course/courses';
+    private getCoursesByCategoryURL = 'https://localhost:5000/api/Course/courses-by-category';
 
     getCourses(): Observable<any> {
-        return this.http.get(this.url)
+        return this.http.get(this.getCoursesURL)
             .pipe(
                 tap(_ => console.log('fetched courses')),
                 catchError(this.handleError<Course[]>('getCourses', []))
+            );
+    }
+
+    getCoursesByCategory(id: number): Observable<any> {
+        const params = new HttpParams().set('id', id.toString());
+        return this.http.get(this.getCoursesByCategoryURL, { params })
+            .pipe(
+                tap(_ => console.log('fetched courses')),
+                catchError(this.handleError<Course[]>('getCoursesByCategory', []))
             );
     }
 

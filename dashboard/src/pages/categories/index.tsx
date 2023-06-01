@@ -215,7 +215,7 @@ const Categories: React.FC = () => {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-  const { allCategories } = useTypedSelector((state) => state.CategoryReducer);
+  const { allCategories } = useTypedSelector((state) => state.CategoryReducer); 
   const { user } = useTypedSelector((state) => state.UserReducer);
 
   const { GetAllCategories } = useActions();

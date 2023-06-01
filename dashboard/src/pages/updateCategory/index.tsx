@@ -2,21 +2,58 @@ import * as React from 'react';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import { Button, Link, Box, ThemeProvider, Container, createTheme, Avatar, CssBaseline, Switch } from '@mui/material';
+import { Button, Link, Box, ThemeProvider, Container, createTheme, Avatar, CssBaseline, Switch, styled } from '@mui/material';
 import { Field, Formik } from 'formik';
 import { UpdateCategorySchema } from './validation';
 import { useActions } from '../../hooks/useActions';
 import { useTypedSelector } from '../../hooks/useTypedSelector';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { getSelectedCategory } from '../../services/api-category-service';
+
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+
 
 const initialValues = { id: "", name: "", description: "" };
 
 const theme = createTheme();
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: theme.palette.common.black,
+    color: theme.palette.common.white,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+  },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.primary,
+  },
+  // hide last border
+  "&:last-child td, &:last-child th": {
+    border: 0,
+  },
+}));
+
+function createData(
+  title: string,
+  price: string,
+  description: string,
+  categoryName: string,
+  action: string,
+) {
+  return { title };
+}
 
 
 const UpdateCourse: React.FC = () => {
@@ -24,7 +61,26 @@ const UpdateCourse: React.FC = () => {
   
   const selectedCategory = getSelectedCategory();
   const navigate = useNavigate();
-  const {DeleteCategory, UpdateCategory} = useActions();
+  const {DeleteCategory, UpdateCategory, DeleteCourse} = useActions();
+  const { allCategories } = useTypedSelector((state) => state.CategoryReducer);
+  const { allCourses } = useTypedSelector((state) => state.CourseReducer);
+
+  const { message } = useTypedSelector((store) => store.CourseReducer);
+  const { GetAllCourses } = useActions();
+
+  useEffect(() => {
+    GetAllCourses();
+  }, []);
+
+
+  if (message === "A category was successfully deleted") {
+    return <Navigate to="/dashboard/categories" />;
+  }
+
+  if(message === "A course was deleted")
+  {
+    window.location.reload();
+  }
 
   if(selectedCategory == null)
   {
@@ -32,6 +88,9 @@ const UpdateCourse: React.FC = () => {
   }
   const updateCategory = JSON.parse(selectedCategory);
   console.log("updateCategory: ", updateCategory);
+
+  var found = allCourses.find((c: { categoryName: string; }) => c.categoryName == updateCategory.name);
+  console.log("found ", found);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,11 +106,41 @@ const UpdateCourse: React.FC = () => {
   };
   
 
+  let flag = true;
+
   const dangerZoneSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    DeleteCategory(updateCategory.id);
-    navigate("/dashboard/categories");
-    window.location.reload();
+
+    console.log("all courses ", allCourses);
+
+  
+      allCourses.forEach((course: { categoryId: any; }) => {
+        if(flag==true)
+        {
+          if(course.categoryId == updateCategory.id)
+          {
+            toast.error("You cannot delete this category because it has courses in it!");
+            flag = false;
+          }
+        }
+      });
+    if(flag)
+    {
+      DeleteCategory(updateCategory.id);
+    }
+
+    //navigate("/dashboard/categories");
+    //window.location.reload();
+  };
+
+
+  const OnEditClick = (event: React.MouseEvent<unknown>, row: any) => {
+    event.preventDefault();
+    if(window.confirm("Are you sure?"))
+    {
+      window.localStorage.setItem("selectedCourse", JSON.stringify(row));
+      navigate("/dashboard/courses/update");
+    }
   };
  
   initialValues.id = updateCategory.id;
@@ -183,9 +272,60 @@ const UpdateCourse: React.FC = () => {
                 </Box>
               </Formik>
           </Box>
-        </Container>                 
-      </ThemeProvider>
-    );
-  return <></>
-}
+        </Container>    
+      
+      {allCourses.find((c: { categoryName: string; }) => c.categoryName == updateCategory.name) != null && (
+        <TableContainer component={Paper} sx={{mt:3}}>
+        <Table sx={{ minWidth: 700}} aria-label="customized table">
+          <TableHead>
+            <StyledTableRow>
+              <StyledTableCell>Title</StyledTableCell>
+              <StyledTableCell align="right">Price</StyledTableCell>
+              <StyledTableCell align="right">Description</StyledTableCell>
+              <StyledTableCell align="right">Action</StyledTableCell>
+            </StyledTableRow>
+          </TableHead>
+          <TableBody>
+         
+            {allCourses.map((row: {
+              categoryName: ReactNode;
+              description: ReactNode;price: ReactNode; title: React.Key | null | undefined; 
+  }) => {
+  
+    if(row.categoryName === updateCategory.name) 
+      return(
+      <StyledTableRow
+          key={row.title}
+          sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+          <StyledTableCell component="th" scope="row">
+            {row.title}
+          </StyledTableCell>
+          <StyledTableCell align="right">{row.price}</StyledTableCell>
+          <StyledTableCell align="right">{row.description}</StyledTableCell>
+          <StyledTableCell align="right">
+              <Button
+                  type="submit"
+                  fullWidth
+                  variant="outlined"
+                  sx={{ width:"45%", my:4}}
+                  onClick={(event) => OnEditClick(event, row)}
+                >
+                  Edit
+            </Button>
+            </StyledTableCell>
+        </StyledTableRow>
+      
+      )}
+      
+      )}
+      </TableBody>
+      </Table>
+      </TableContainer>
+      )}
+        
+
+  </ThemeProvider>
+);
+};
+
 export default UpdateCourse;
